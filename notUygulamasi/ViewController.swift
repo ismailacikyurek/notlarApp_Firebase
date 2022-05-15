@@ -7,13 +7,14 @@
 
 import UIKit
 import Firebase
-
+let refreshControl: UIRefreshControl = UIRefreshControl()
 class ViewController: UIViewController {
     @IBOutlet weak var tableView: UITableView!
     
     
     var notlarListe = [Notlar]()
     var ref : DatabaseReference!
+   
     override func viewDidLoad() {
         super.viewDidLoad()
        
@@ -21,13 +22,35 @@ class ViewController: UIViewController {
         tableView.delegate = self
         tableView.dataSource = self
         ref = Database.database().reference()
+        
+        //refresh
+        refreshControl.attributedTitle = NSAttributedString(string: "Pull to refresh")
+        refreshControl.backgroundColor = .yellow
+        refreshControl.tintColor = .blue
+        refreshControl.addTarget(self, action: #selector(self.refresh(_:)), for: .valueChanged)
+        tableView.addSubview(refreshControl) // not required when using UITableViewController
+    
     
         
     }
     override func viewWillAppear(_ animated: Bool) {
         tumNotlariAL()
     }
+   
+   
+
+
+    @objc func refresh(_ sender: AnyObject) {
+        tumNotlariAL()
+        tableView.reloadData()
+        refreshControl.endRefreshing()
+        
+    }
     
+    
+
+
+   
     func tumNotlariAL() {
         ref.child("notlar").observe(.value) { snapshot in
             if let gelenVeriButunu = snapshot.value as? [String:Any] {
